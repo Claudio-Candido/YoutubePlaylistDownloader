@@ -1,0 +1,30 @@
+# Ambientes virtuais
+.venv/
+venv/
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.Python
+dist/
+build/
+
+# Downloads e estado local da fila
+downloads/*
+!downloads/.gitkeep
+
+# IDE / SO
+.idea/
+.vscode/
+.vs/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs / temporários
+*.log
+*.tmp

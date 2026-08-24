@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YoutubePlaylistDownloader</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">▶</span>
+        <div>
+          <h1>YoutubePlaylistDownloader</h1>
+          <p class="subtitle">Vídeo, áudio, playlists e legendas · Flask + yt-dlp</p>
+        </div>
+      </div>
+      {% if not ffmpeg_ok %}
+      <div class="banner banner-warn" id="ffmpegBanner">
+        FFmpeg não encontrado no PATH. Instale-o antes de descarregar.
+      </div>
+      {% endif %}
+    </header>
+
+    <section class="search-panel card">
+      <label class="sr-only" for="queryInput">URL ou pesquisa</label>
+      <div class="search-row">
+        <textarea
+          id="queryInput"
+          rows="2"
+          placeholder="Cole um URL de vídeo, playlist ou canal — ou escreva termos de pesquisa (use ?texto para forçar pesquisa)"
+        ></textarea>
+        <button type="button" id="resolveBtn" class="btn btn-primary">
+          Analisar
+        </button>
+      </div>
+      <p class="hint">Exemplos: URL do YouTube · playlist · <code>?never gonna give you up</code></p>
+    </section>
+
+    <section id="resultsSection" class="card hidden">
+      <div class="results-header">
+        <h2 id="resultsTitle">Resultados</h2>
+        <div id="multiActions" class="hidden">
+          <button type="button" class="btn btn-ghost" id="selectAllBtn">Seleccionar todos</button>
+          <button type="button" class="btn btn-ghost" id="selectNoneBtn">Nenhum</button>
+        </div>
+      </div>
+      <div id="videoList" class="video-list"></div>
+    </section>
+
+    <section id="optionsSection" class="card hidden">
+      <h2>Opções de download</h2>
+
+      <div class="options-grid">
+        <fieldset>
+          <legend>Modo</legend>
+          <div class="radio-row">
+            <label><input type="radio" name="mode" value="video" checked /> Vídeo</label>
+            <label><input type="radio" name="mode" value="audio" /> Só áudio</label>
+            <label><input type="radio" name="mode" value="subtitles" /> Só legendas</label>
+          </div>
+        </fieldset>
+
+        <fieldset id="videoOpts">
+          <legend>Vídeo</legend>
+          <label>
+            Contentor
+            <select id="container">
+              {% for c in video_containers %}
+              <option value="{{ c }}" {% if c == 'mp4' %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            Qualidade
+            <select id="quality">
+              <option value="highest" selected>Melhor</option>
+              <option value="1080">≤ 1080p</option>
+              <option value="720">≤ 720p</option>
+              <option value="480">≤ 480p</option>
+              <option value="360">≤ 360p</option>
+              <option value="lowest">Pior</option>
+            </select>
+          </label>
+        </fieldset>
+
+        <fieldset id="audioOpts">
+          <legend>Áudio</legend>
+          <label id="audioFormatLabel">
+            Formato
+            <select id="audioFormat">
+              {% for f in audio_formats %}
+              <option value="{{ f }}" {% if f == 'mp3' %}selected{% endif %}>{{ f }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <p class="muted" id="audioHint">
+            Vídeo: seleccione idiomas e marque «Embutir» para várias pistas no mesmo ficheiro.
+            Só áudio: um ficheiro por idioma.
+          </p>
+          <div class="check-row" id="embedAudioRow">
+            <label>
+              <input type="checkbox" id="embedAudio" checked />
+              Embutir áudios seleccionados no vídeo
+            </label>
+          </div>
+          <div class="check-row audio-actions hidden" id="audioSelectActions">
+            <button type="button" class="btn btn-ghost btn-sm" id="audioSelectAllBtn">Todos os áudios</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="audioSelectNoneBtn">Nenhum</button>
+          </div>
+          <div id="audioList" class="subtitle-list">
+            <p class="muted">Analise um vídeo para ver idiomas de áudio disponíveis.</p>
+          </div>
+        </fieldset>
+
+        <fieldset id="subtitleOpts">
+          <legend>Legendas</legend>
+          <label>
+            Formato
+            <select id="subtitleFormat">
+              {% for f in subtitle_formats %}
+              <option value="{{ f }}">{{ f }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <div class="check-row">
+            <label><input type="checkbox" id="writeSubs" /> Guardar ficheiros separados</label>
+            <label><input type="checkbox" id="embedSubs" /> Embutir no vídeo</label>
+          </div>
+          <p class="muted">Dica: muitos idiomas de uma vez podem falhar (limite do YouTube). Prefira 2–4.</p>
+          <div id="subtitleList" class="subtitle-list">
+            <p class="muted">Analise um vídeo para ver idiomas disponíveis.</p>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="options-actions">
+        <button type="button" id="downloadBtn" class="btn btn-primary" disabled>
+          Descarregar
+        </button>
+        <span id="selectionCount" class="muted"></span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="results-header">
+        <h2>Fila de downloads</h2>
+        <button type="button" class="btn btn-ghost" id="clearFinishedBtn">Limpar concluídos</button>
+      </div>
+      <div id="jobList" class="job-list">
+        <p class="muted" id="emptyQueue">Nenhum download na fila.</p>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
