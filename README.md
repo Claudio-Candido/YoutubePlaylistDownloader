@@ -16,6 +16,21 @@ com interface em português (tema escuro).
 
 ---
 
+## Interface
+
+![Interface do YoutubePlaylistDownloader](docs/assets/ui-hero.png)
+
+<p align="center"><em>Página principal após analisar um vídeo — pesquisa, resultados e opções de download.</em></p>
+
+<details>
+<summary>Ver captura de ecrã completa (página inteira)</summary>
+
+![Captura completa da interface](docs/assets/ui-screenshot.png)
+
+</details>
+
+---
+
 ## Índice
 
 - [Funcionalidades](#funcionalidades)
